@@ -12,5 +12,5 @@ cabal-version:          >=1.8
 executable trivia
   main-is:              server.hs
   -- other-modules:       
-  build-depends:        base == 4.*,
+  build-depends:        base,
                         scotty

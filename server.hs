@@ -1,21 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 import Web.Scotty
 import Data.Monoid (mconcat)
-import Data.Text.Lazy (toStrict)
---import Data.Char (digitToInt)
+import Data.Text.Lazy (unpack)
 
---paramToInt :: a -> Int
---paramToInt x = digitToInt $ head $ show x
-paramToInt x = read (show (toStrict x)) :: Int
-
-getIndex :: Int -> [a] -> a
-getIndex index list = last $ take (index + 1) list
+paramToInt x = read (unpack x) :: Int
 
 questions = ["Who has been nominated for the most Oscars?","What's the closest planet to the Sun?"]
+
+display array = html $ mconcat array
 
 main = scotty 3000 $ do
   get "/:questionId" $ do
     questionId <- param "questionId"
     let index = paramToInt questionId
-    let question = getIndex index questions
-    html $ mconcat ["<h1>Question ", questionId, ": ", question ,"</h1>"]
+    let question = questions !! index
+    display ["<h1>Question ", questionId, ": ", question ,"</h1>"]
