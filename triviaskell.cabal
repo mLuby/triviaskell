@@ -13,8 +13,10 @@ library
   hs-source-dirs:      src
   exposed-modules:     Server
   build-depends:       base,
+                       random,
                        scotty,
                        text,
+                       transformers,
                        wai-extra
 
 executable trivia

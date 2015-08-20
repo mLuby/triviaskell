@@ -2,8 +2,10 @@
 
 module Server (run) where
 
-import Data.Text.Lazy (Text, unpack)
+import Control.Monad.IO.Class (liftIO)
+import Data.Text.Lazy (pack, Text, unpack)
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
+import System.Random (getStdGen, randomRIO)
 import Web.Scotty
 
 run :: IO ()
@@ -21,6 +23,12 @@ routes = do
     let index = paramToInt questionId
     let question = questions !! index
     display ["<h1>Question ", questionId, ": ", question ,"</h1>"]
+
+  get "/random" $ do
+    index <- liftIO $ randomRIO (0 :: Int, 1 :: Int)
+    let question = questions !! index
+    let questionId = pack $ show index
+    display ["<h1> Question ", questionId, ": ", question, "</h1>"]
 
 paramToInt :: Text -> Int
 paramToInt x = read (unpack x) :: Int
