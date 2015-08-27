@@ -20,10 +20,15 @@ closestPlanetToTheSun :: Question
 closestPlanetToTheSun = Question { questionId = 2, questionText = "What is the closest planet to the Sun?" }
 
 allQuestions :: [Question]
-allQuestions = [secondManOnTheMoon, closestPlanetToTheSun]
+allQuestions =  [ Question { questionId = 1, questionText = "What time is it?"}
+                , Question { questionId = 2, questionText = "Where are we?"}
+                , Question { questionId = 3, questionText = "Who are you?"}]
 
 matchesId :: Int -> Question -> Bool
 matchesId id question = questionId question == id
+
+getQuestionText :: Int -> [Char]
+getQuestionText id = questionText (head (filter (matchesId id) allQuestions))
 
 run = do
   putStrLn "Starting Server..."
@@ -37,6 +42,6 @@ run = do
 
     get "/questions/:id" $ do
       id <- param "id"
-      let theQuestionText = questionText (head (filter (matchesId id) allQuestions))
-      text ("question: " <> pack theQuestionText <> "!")
+      let theQuestionText = getQuestionText id
+      text ("Riddle me this: " <> pack theQuestionText)
       --json (filter (matchesId id) allQuestions)
