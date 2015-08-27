@@ -17,7 +17,8 @@ library
                        scotty,
                        text,
                        transformers,
-                       wai-extra
+                       wai-extra,
+                       aeson
 
 executable trivia
   hs-source-dirs:       app

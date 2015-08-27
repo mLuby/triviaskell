@@ -1,40 +1,42 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 
-module Server (run) where
+module Server where
 
-import Control.Monad.IO.Class (liftIO)
-import Data.Text.Lazy (pack, Text, unpack)
-import Network.Wai.Middleware.RequestLogger (logStdoutDev)
-import System.Random (getStdGen, randomRIO)
+import GHC.Generics
 import Web.Scotty
+import Data.Text.Lazy (pack, Text, unpack)
+import Data.Monoid ((<>))
+import Data.Aeson (FromJSON, ToJSON)
 
-run :: IO ()
+data Question = Question { questionId :: Int, questionText :: String } deriving (Show, Generic)
+instance ToJSON Question
+instance FromJSON Question
+
+secondManOnTheMoon :: Question
+secondManOnTheMoon = Question { questionId = 1, questionText = "Who was the second man on the moon?" }
+
+closestPlanetToTheSun :: Question
+closestPlanetToTheSun = Question { questionId = 2, questionText = "What is the closest planet to the Sun?" }
+
+allQuestions :: [Question]
+allQuestions = [secondManOnTheMoon, closestPlanetToTheSun]
+
+matchesId :: Int -> Question -> Bool
+matchesId id question = questionId question == id
+
 run = do
+  putStrLn "Starting Server..."
   scotty 3000 $ do
-    middleware logStdoutDev
-    routes
+    --get "/hello/:name" $ do
+    --    name <- param "name"
+    --    text ("hello " <> name <> "!")
 
-routes :: ScottyM ()
-routes = do
-  get "/" $ text "hello world"
+    get "/questions" $ do
+      json allQuestions
 
-  get "/:questionId" $ do
-    questionId <- param "questionId"
-    let index = paramToInt questionId
-    let question = questions !! index
-    display ["<h1>Question ", questionId, ": ", question ,"</h1>"]
-
-  get "/random" $ do
-    index <- liftIO $ randomRIO (0 :: Int, 1 :: Int)
-    let question = questions !! index
-    let questionId = pack $ show index
-    display ["<h1> Question ", questionId, ": ", question, "</h1>"]
-
-paramToInt :: Text -> Int
-paramToInt x = read (unpack x) :: Int
-
-questions :: [Text]
-questions = ["Who has been nominated for the most Oscars?","What's the closest planet to the Sun?"]
-
-display :: [Text] -> ActionM ()
-display array = html $ mconcat array
+    get "/questions/:id" $ do
+      id <- param "id"
+      let theQuestionText = questionText (head (filter (matchesId id) allQuestions))
+      text ("question: " <> pack theQuestionText <> "!")
+      --json (filter (matchesId id) allQuestions)
