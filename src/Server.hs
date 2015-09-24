@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module Server where
+module Server (run) where
 
 import GHC.Generics
 import Web.Scotty
@@ -10,18 +10,13 @@ import Data.Monoid ((<>))
 import Data.Aeson (FromJSON, ToJSON)
 import Control.Monad.IO.Class (liftIO)
 import System.Random (randomRIO)
+import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 
 data Question = Question { questionId :: Int, questionText :: String } deriving (Show, Generic)
 instance ToJSON Question
 instance FromJSON Question
 
-secondManOnTheMoon :: Question
-secondManOnTheMoon = Question { questionId = 1, questionText = "Who was the second man on the moon?" }
-
-closestPlanetToTheSun :: Question
-closestPlanetToTheSun = Question { questionId = 2, questionText = "What is the closest planet to the Sun?" }
-
-allQuestions :: [Question]
+allQuestions :: [Question] -- as map
 allQuestions =  [ Question { questionId = 1, questionText = "What time is it?"}
                 , Question { questionId = 2, questionText = "Where are we?"}
                 , Question { questionId = 3, questionText = "Who are you?"}]
@@ -29,15 +24,15 @@ allQuestions =  [ Question { questionId = 1, questionText = "What time is it?"}
 matchesId :: Int -> Question -> Bool
 matchesId id question = questionId question == id
 
-getQuestionText :: Int -> [Char]
-getQuestionText id = questionText (head (filter (matchesId id) allQuestions))
+getQuestionText :: Int -> String
+getQuestionText id = questionText . head $ filter (\q -> questionId q == id) allQuestions
 
 run = do
   putStrLn "Starting Server..."
   scotty 3000 $ do
-    --get "/hello/:name" $ do
-    --    name <- param "name"
-    --    text ("hello " <> name <> "!")
+    middleware logStdoutDev
+    get "/" $ do
+      text ("hello world")
 
     get "/questions" $ do
       json allQuestions
@@ -45,7 +40,7 @@ run = do
     get "/questions/random" $ do
       id <- liftIO $ randomRIO (1 :: Int, 2 :: Int)
       let theQuestionText = getQuestionText id
-      text ("Riddle me this: " <> pack theQuestionText)
+      text . pack $ "Riddle me this: " ++ theQuestionText
 
     get "/questions/:id" $ do
       id <- param "id"
