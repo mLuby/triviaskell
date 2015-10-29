@@ -18,7 +18,8 @@ library
                        text,
                        transformers,
                        wai-extra,
-                       aeson
+                       aeson,
+                       persistent
 
 executable trivia
   hs-source-dirs:       app
