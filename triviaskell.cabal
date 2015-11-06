@@ -13,7 +13,12 @@ library
   hs-source-dirs:      src
   exposed-modules:     Server
   build-depends:       base,
+                       monad-logger,
+                       persistent,
+                       persistent-mysql,
+                       persistent-template,
                        random,
+                       resourcet,
                        scotty,
                        text,
                        transformers,
